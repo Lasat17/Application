@@ -35,6 +35,15 @@ gdf_sorted = gdf.sort_values(['cloudcoverpercentage'], ascending=[True])
 
 dinfar = gdf_sorted.values
 
+
+dinmor = api.download("1508e383-6070-463c-9a4d-9bb93b529c54")
+
+dinmorsmor = dinmor['title'] + ".zip"
+
+
+
+with zipfile.ZipFile(dinmorsmor, 'r') as zip_ref:
+   zip_ref.extractall(".\data")
 ##
 #print(dinfar)
 
