@@ -8,6 +8,7 @@ from rasterio import plot
 from rasterio.plot import show
 from rasterio.mask import mask
 from osgeo import gdal
+import numpy as np
 
 #9.7174072265625,55.024873440944816
 
@@ -37,45 +38,51 @@ dinfar = gdf_sorted.values
 ##
 #print(dinfar)
 
-
-dinmor = api.download("1508e383-6070-463c-9a4d-9bb93b529c54")
-
-dinmorsmor = dinmor['title'] + ".zip"
-
-
-
-with zipfile.ZipFile(dinmorsmor, 'r') as zip_ref:
-   zip_ref.extractall(".\data")
 ##
 
-bands = r'D:\Uni\7. Semester\CondaApplication\data\S2A_MSIL2A_20211026T103131_N0301_R108_T32UNG_20211026T133456.SAFE\GRANULE\L2A_T32UNG_A033138_20211026T103127\IMG_DATA\R60m'
-blue = rasterio.open(bands + '\T32UNG_20211026T103131_B02_60m.jp2')
-green = rasterio.open(bands +'\T32UNG_20211026T103131_B03_60m.jp2')
-red = rasterio.open(bands + '\T32UNG_20211026T103131_B04_60m.jp2')
-with rasterio.open('image_name.tiff','w',driver='Gtiff', width=blue.width, height=blue.height, count=3, crs=blue.crs,transform=blue.transform, dtype=blue.dtypes[0]) as rgb:
-    rgb.write(blue.read(1),3)
-    rgb.write(green.read(1),2)
-    rgb.write(red.read(1),1)
-    rgb.close()
+bands = r'data\S2A_MSIL2A_20211026T103131_N0301_R108_T32UNG_20211026T133456.SAFE\GRANULE\L2A_T32UNG_A033138_20211026T103127\IMG_DATA\R10m'
+blue = rasterio.open(bands + '\T32UNG_20211026T103131_B02_10m.jp2')
+green = rasterio.open(bands +'\T32UNG_20211026T103131_B03_10m.jp2')
 
-check = rasterio.open("image_name.tiff")
-check.crs
+band4 = rasterio.open(bands + '\T32UNG_20211026T103131_B04_10m.jp2') #red
+band5 = rasterio.open(bands + '\T32UNG_20211026T103131_B08_10m.jp2') #nir
+
+##NDVI
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+plot.show(band4, ax=ax1, cmap='Blues') #red
+plot.show(band5, ax=ax2, cmap='Blues') #nir
+fig.tight_layout()
+
+#generate nir and red objects as arrays in float64 format
+red = band4.read(1).astype('float64')
+nir = band5.read(1).astype('float64')
+
+nir
+#ndvi calculation, empty cells or nodata cells are reported as 0
+ndvi=np.where(
+    (nir+red)==0.,
+    0,
+    (nir-red)/(nir+red))
+ndvi[:5,:5]
+#export ndvi image
+ndviImage = rasterio.open('image_name.tiff','w',driver='Gtiff',
+                          width=band4.width,
+                          height = band4.height,
+                          count=1, crs=band4.crs,
+                          transform=band4.transform,
+                          dtype='float64')
+ndviImage.write(ndvi,1)
+ndviImage.close()
+#plot ndvi
+ndvi = rasterio.open('image_name.tiff')
+fig = plt.figure(figsize=(18,12))
+plot.show(ndvi)
+##
 
 
-bound_crs = boundary.to_crs({'init': 'epsg:32632'})
-with rasterio.open("image_name.tiff") as src:
-    out_image, out_transform = mask(src,
-                                    bound_crs.geometry, crop=True)
-    out_meta = src.meta.copy()
-    out_meta.update({"driver": "GTiff",
-                     "height": out_image.shape[1],
-                     "width": out_image.shape[2],
-                     "transform": out_transform})
 
-with rasterio.open("masked_image.tif", "w", **out_meta) as final:
-    final.write(out_image)
 
-src = rasterio.open(r'masked_image.tif')
-plt.figure(figsize=(6, 6))
-plt.title('Final Image')
-plot.show(src, adjust='linear')
+
+
