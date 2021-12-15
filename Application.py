@@ -12,8 +12,8 @@ import numpy as np
 
 #9.7174072265625,55.024873440944816
 
-m = folium.Map([9.5965576171875,
-              54.6833587900274], zoom_start=11)
+m = folium.Map([10.763468742370605,
+              55.32006177774786], zoom_start=11)
 boundary = gpd.read_file(r'map(cph).geojson')
 folium.GeoJson(boundary).add_to(m)
 
@@ -39,50 +39,50 @@ dinfar = gdf_sorted.values
 #print(dinfar)
 
 
-dinmor = api.download("1508e383-6070-463c-9a4d-9bb93b529c54")
+dinmor = api.download('075e801e-2a9f-4325-8f3d-1d58a88ac53d')
 
 dinmorsmor = dinmor['title'] + ".zip"
 
 import os
 
 print()
-dirName = os.listdir("data\\" + dinmor['title']+ ".SAFE\GRANULE\\")
+
 
 
 
 with zipfile.ZipFile(dinmorsmor, 'r') as zip_ref:
-   zip_ref.extractall(".\data")
+
+   zip_ref.extractall("data/")
+   print("Zip done")
 ##
+dirName = os.listdir("data\\" + dinmor['title']+ ".SAFE\GRANULE\\")
 
-bands = "data\\" + dinmor['title']+ ".SAFE\GRANULE\\" +dirName[0]+ "\IMG_DATA\R10m"
+bands = "data\\" + dinmor['title']+ ".SAFE\GRANULE\\" +dirName[0]+ "\IMG_DATA\R60m"
 
-fileName = os.listdir("data\\" + dinmor['title']+ ".SAFE\GRANULE\\" + dirName[0]+ "\IMG_DATA\R10m")
+fileName = os.listdir("data\\" + dinmor['title']+ ".SAFE\GRANULE\\" + dirName[0]+ "\IMG_DATA\R60m")
 
 #blue = rasterio.open(bands + '\T32UNG_20211026T103131_B02_10m.jp2')
 #green = rasterio.open(bands +'\T32UNG_20211026T103131_B03_10m.jp2')
 
-band4 = rasterio.open(bands + '\\' + fileName[3]) #red
-band5 = rasterio.open(bands + '\\' + fileName[4]) #nir
+band4 = rasterio.open(bands + '\\' + fileName[4]) #red
+band5 = rasterio.open(bands + '\\' + fileName[8]) #nir
 
 ##NDVI
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-#plot.show(band4, ax=ax1, cmap='Blues') #red
-#plot.show(band5, ax=ax2, cmap='Blues') #nir
+plot.show(band4, ax=ax1, cmap='Blues') #red
+plot.show(band5, ax=ax2, cmap='Blues') #nir
 fig.tight_layout()
 
 #generate nir and red objects as arrays in float64 format
-red = band4.read(1).astype('float64')
-nir = band5.read(1).astype('float64')
+red = band4.read(1).astype('float')
+nir = band5.read(1).astype('float')
 
 nir
 #ndvi calculation, empty cells or nodata cells are reported as 0
-ndvi=np.where(
-    (nir+red)==0.,
-    0,
-    (nir-red)/(nir+red))
-ndvi[:5,:5]
+
+ndvi = (nir - red) / (nir + red)
 #export ndvi image
 ndviImage = rasterio.open('image_name.tiff','w',driver='Gtiff',
                           width=band4.width,
@@ -96,6 +96,7 @@ ndviImage.close()
 ndvi = rasterio.open('image_name.tiff')
 fig = plt.figure(figsize=(18,12))
 plot.show(ndvi)
+
 ##
 
 
