@@ -35,33 +35,41 @@ gdf_sorted = gdf.sort_values(['cloudcoverpercentage'], ascending=[True])
 
 dinfar = gdf_sorted.values
 
+##
+#print(dinfar)
+
 
 dinmor = api.download("1508e383-6070-463c-9a4d-9bb93b529c54")
 
 dinmorsmor = dinmor['title'] + ".zip"
+
+import os
+
+print()
+dirName = os.listdir("data\\" + dinmor['title']+ ".SAFE\GRANULE\\")
 
 
 
 with zipfile.ZipFile(dinmorsmor, 'r') as zip_ref:
    zip_ref.extractall(".\data")
 ##
-#print(dinfar)
 
-##
+bands = "data\\" + dinmor['title']+ ".SAFE\GRANULE\\" +dirName[0]+ "\IMG_DATA\R10m"
 
-bands = r'data\S2A_MSIL2A_20211026T103131_N0301_R108_T32UNG_20211026T133456.SAFE\GRANULE\L2A_T32UNG_A033138_20211026T103127\IMG_DATA\R10m'
-blue = rasterio.open(bands + '\T32UNG_20211026T103131_B02_10m.jp2')
-green = rasterio.open(bands +'\T32UNG_20211026T103131_B03_10m.jp2')
+fileName = os.listdir("data\\" + dinmor['title']+ ".SAFE\GRANULE\\" + dirName[0]+ "\IMG_DATA\R10m")
 
-band4 = rasterio.open(bands + '\T32UNG_20211026T103131_B04_10m.jp2') #red
-band5 = rasterio.open(bands + '\T32UNG_20211026T103131_B08_10m.jp2') #nir
+#blue = rasterio.open(bands + '\T32UNG_20211026T103131_B02_10m.jp2')
+#green = rasterio.open(bands +'\T32UNG_20211026T103131_B03_10m.jp2')
+
+band4 = rasterio.open(bands + '\\' + fileName[3]) #red
+band5 = rasterio.open(bands + '\\' + fileName[4]) #nir
 
 ##NDVI
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-plot.show(band4, ax=ax1, cmap='Blues') #red
-plot.show(band5, ax=ax2, cmap='Blues') #nir
+#plot.show(band4, ax=ax1, cmap='Blues') #red
+#plot.show(band5, ax=ax2, cmap='Blues') #nir
 fig.tight_layout()
 
 #generate nir and red objects as arrays in float64 format
