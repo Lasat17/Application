@@ -39,7 +39,7 @@ dinfar = gdf_sorted.values
 #print(dinfar)
 
 
-dinmor = api.download('075e801e-2a9f-4325-8f3d-1d58a88ac53d')
+dinmor = api.download('e8d0a4e5-c9a2-4c74-aafe-0163284e9aec')
 
 dinmorsmor = dinmor['title'] + ".zip"
 
@@ -64,20 +64,23 @@ fileName = os.listdir("data\\" + dinmor['title']+ ".SAFE\GRANULE\\" + dirName[0]
 #blue = rasterio.open(bands + '\T32UNG_20211026T103131_B02_10m.jp2')
 #green = rasterio.open(bands +'\T32UNG_20211026T103131_B03_10m.jp2')
 
+
+band2 = rasterio.open(bands + '\\' + fileName[2]) #blue
+band3 = rasterio.open(bands + '\\' + fileName[3]) #green
 band4 = rasterio.open(bands + '\\' + fileName[4]) #red
-band5 = rasterio.open(bands + '\\' + fileName[8]) #nir
+band8 = rasterio.open(bands + '\\' + fileName[8]) #nir
 
 ##NDVI
-
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-plot.show(band4, ax=ax1, cmap='Blues') #red
-plot.show(band5, ax=ax2, cmap='Blues') #nir
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4))
+plot.show(band2, ax=ax1, cmap='Blues')
+plot.show(band3, ax=ax2, cmap='Greens')
+plot.show(band4, ax=ax3, cmap='Reds')
 fig.tight_layout()
+
 
 #generate nir and red objects as arrays in float64 format
 red = band4.read(1).astype('float')
-nir = band5.read(1).astype('float')
+nir = band8.read(1).astype('float')
 
 nir
 #ndvi calculation, empty cells or nodata cells are reported as 0
@@ -97,9 +100,32 @@ ndvi = rasterio.open('image_name.tiff')
 fig = plt.figure(figsize=(18,12))
 plot.show(ndvi)
 
+#Øverst venstre
+upperLeft = ndvi.transform * (0,0)
+print(upperLeft)
+
+#lavere højre
+lowerRight = ndvi.transform * (ndvi.width, ndvi.height)
+print(lowerRight)
+
+print(ndvi.crs)
 ##
 
+from pyproj import Proj, transform
 
+inProj = Proj(init=ndvi.crs)
+outProj = Proj(init='epsg:4326')
+x1, y1 = upperLeft
+x2, y2 = lowerRight
+
+x3, y3 =transform(inProj, outProj, x1, y1)
+x4, y4 =transform(inProj, outProj, x2, y2)
+
+#printer upper left
+print(y3, x3)
+
+#printer lower right
+print(y4, x4)
 
 
 
